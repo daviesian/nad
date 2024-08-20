@@ -1,0 +1,14 @@
+# docker run --rm -it --device=/dev/ttyUSB0 -v .:/nad python:3-slim bash -c 'pip install pyserial anvil-uplink; cd /nad; python server.py'
+
+services:
+  nad:
+    container_name: nad-server
+    image: python:3-slim
+    restart: always
+    command: ["bash", "-c", "pip install pyserial anvil-uplink; cd /nad; python -u server.py"]
+    devices:
+      - /dev/ttyUSB0
+    volumes:
+      - .:/nad
+    environment:
+      UPLINK_KEY: xxxx
