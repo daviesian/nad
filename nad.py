@@ -61,7 +61,7 @@ class NadMixer(object):
         self._set_device_to_known_state()
 
     def _open_connection(self):
-        print 'NAD mixer: Connecting through "%s"'% self.port
+        print('NAD mixer: Connecting through "%s"'% self.port)
         self._device = serial.Serial(
             port=self.port,
             baudrate=self.BAUDRATE,
@@ -80,7 +80,7 @@ class NadMixer(object):
 
     def _get_device_model(self):
         model = self._ask_device('Main.Model')
-        print 'NAD mixer: Connected to model "%s"' % model
+        print('NAD mixer: Connected to model "%s"' % model)
         return model
 
     def _power_device_on(self):
@@ -92,10 +92,10 @@ class NadMixer(object):
     def _select_speakers(self):
         if self.speakers_a is not None:
             self._check_and_set(
-                'Main.SpeakerA', 'On' if self.speakers_a else 'Off')
+                'Main.Speakera', 'On' if self.speakers_a else 'Off')
         if self.speakers_b is not None:
             self._check_and_set(
-                'Main.SpeakerB', 'On' if self.speakers_b else 'Off')
+                'Main.Speakerb', 'On' if self.speakers_b else 'Off')
 
     def _select_input_source(self):
         if self.source is not None:
@@ -114,19 +114,19 @@ class NadMixer(object):
         if current_nad_volume is None:
             current_nad_volume = self.VOLUME_LEVELS
         if current_nad_volume == self.VOLUME_LEVELS:
-            print 'NAD mixer: Calibrating by setting volume to 0'
+            print('NAD mixer: Calibrating by setting volume to 0')
         self._nad_volume = current_nad_volume
         if self._decrease_volume():
             current_nad_volume -= 1
         if current_nad_volume == 0:
-            print 'NAD mixer: Done calibrating'
+            print('NAD mixer: Done calibrating')
         else:
             self.calibrate_volume(current_nad_volume)
 
     def _set_volume(self, volume):
         # Increase or decrease the amplifier volume until it matches the given
         # target volume.
-        print 'Setting volume to %d' % volume
+        print('Setting volume to %d' % volume)
         target_nad_volume = volume # int(round(volume * self.VOLUME_LEVELS / 100.0))
         if self._nad_volume is None:
             return False  # Calibration needed
@@ -152,12 +152,12 @@ class NadMixer(object):
         for attempt in range(1, 4):
             if self._ask_device(key) == value:
                 return True
-            print 'NAD mixer: Setting "%s" to "%s" (attempt %d/3)' % (key, value, attempt)
+            print('NAD mixer: Setting "%s" to "%s" (attempt %d/3)' % (key, value, attempt))
             self._command_device(key, value)
         if self._ask_device(key) == value:
             return True
         else:
-            print 'NAD mixer: Gave up on setting "%s" to "%s"' % (key, value)
+            print('NAD mixer: Gave up on setting "%s" to "%s"' % (key, value))
             return False
 
     def _ask_device(self, key):
@@ -165,8 +165,6 @@ class NadMixer(object):
         return self._readline().replace('%s=' % key, '')
 
     def _command_device(self, key, value):
-        if type(value) == unicode:
-            value = value.encode('utf-8')
         self._write('%s=%s' % (key, value))
         self._readline()
 
@@ -176,16 +174,14 @@ class NadMixer(object):
         if not self._device.isOpen():
             self._device.open()
         self._device.write(('\n%s\n' % data).encode("ascii"))
-        print 'Write: %s' % data
+        print('Write: %s' % data)
 
     def _readline(self):
         # Read line from device. The result is stripped for leading and
         # trailing whitespace.
         if not self._device.isOpen():
             self._device.open()
-        result = self._device.readline().strip()
+        result = self._device.readline().strip().decode("ascii")
         if result:
-            print 'Read: %s' % result
+            print('Read: %s' % result)
         return result
-
-
